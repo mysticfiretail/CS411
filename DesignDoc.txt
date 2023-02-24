@@ -1,0 +1,21 @@
+Frameworks: 
+Flask (python backend) 
+SQL (maybe)
+Bootstrap (css front end) 
+
+Idea 1:
+Weather api 
+Spotify 
+
+Weather app that will create a Spotify playlist based on the weather forecast for the next week (song per day based on the temperature/weather conditions)
+
+LINKS:
+https://developer.spotify.com/console/post-playlists/
+
+
+Idea 2: 
+Neighborhood Connect
+News API
+Weather API
+
+Place for people in the same neighborhood to see whats going on in/ around their neighborhood and they can connect with one another. 
