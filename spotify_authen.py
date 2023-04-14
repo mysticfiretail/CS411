@@ -10,7 +10,7 @@ from urllib.parse import urlencode, urlparse, parse_qs
 app = Flask(__name__)
 
 client_id = '961732832e4d40fb8d0f05531a1dbaf9'
-redirect_uri = 'http://localhost:5000/callback'
+redirect_uri = 'http://localhost/'
 
 def generate_random_string(length):
     s = ''
