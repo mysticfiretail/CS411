@@ -2,74 +2,137 @@ import os
 import requests
 import base64
 import json
-from flask import Flask, request, redirect
+import random
+import hashlib
+from flask import Flask, request, redirect, url_for, render_template
+from urllib.parse import urlencode, urlparse, parse_qs
 
-# Spotify API credentials
-CLIENT_ID = '961732832e4d40fb8d0f05531a1dbaf9'
-CLIENT_SECRET = '932d4693a5c940b69003ade79734f8d8'
-
-# Spotify authorization endpoints
-AUTH_URL = 'https://accounts.spotify.com/authorize'
-TOKEN_URL = 'https://accounts.spotify.com/api/token'
-
-# Callback URL for your application
-REDIRECT_URI = 'http://localhost:5000/callback'
-
-# User authorization scopes
-SCOPE = 'user-library-read'
-
-# Flask app configuration
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+
+client_id = '961732832e4d40fb8d0f05531a1dbaf9'
+redirect_uri = 'http://localhost:5000/callback'
+
+def generate_random_string(length):
+    s = ''
+    possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    for i in range(length):
+        s += random.choice(possible)
+    return s
+
+def sha256_digest(key):
+    sha256 = hashlib.sha256()
+    sha256.update(key)
+    digest = sha256.digest()
+    return digest
+
+def base64_url_encode(data):
+    return base64.urlsafe_b64encode(data).rstrip(b'=').decode('utf-8')
+
+def generate_code_challenge(code_verifier):
+    data = code_verifier.encode('utf-8')
+    digest = sha256_digest(data)
+    return base64_url_encode(digest)
 
 @app.route('/')
-def index():
-    # Redirect the user to the Spotify authorization page
-    auth_query_params = {
+def authorize():
+    code_verifier = generate_random_string(128)
+    code_challenge = generate_code_challenge(code_verifier)
+    state = generate_random_string(16)
+    scope = 'user-read-private user-read-email'
+
+    with open('code_verifier.txt', 'w') as f:
+        f.write(code_verifier)
+
+    args = urlencode({
         'response_type': 'code',
-        'redirect_uri': REDIRECT_URI,
-        'client_id': CLIENT_ID,
-        'scope': SCOPE,
-    }
-    auth_url = AUTH_URL + '?' + urllib.parse.urlencode(auth_query_params)
-    return redirect(auth_url)
+        'client_id': client_id,
+        'scope': scope,
+        'redirect_uri': redirect_uri,
+        'state': state,
+        'code_challenge_method': 'S256',
+        'code_challenge': code_challenge
+    })
+
+    authorization_url = f'https://accounts.spotify.com/authorize?{args}'
+    return redirect(authorization_url)
 
 @app.route('/callback')
 def callback():
-    # Exchange the authorization code for an access token
-    auth_code = request.args['code']
-    auth_header = base64.b64encode((CLIENT_ID + ':' + CLIENT_SECRET).encode('ascii')).decode('ascii')
-    token_response = requests.post(
-        TOKEN_URL,
+    code = request.args.get('code')
+    with open('code_verifier.txt', 'r') as f:
+        code_verifier = f.read()
+
+    body = urlencode({
+        'grant_type': 'authorization_code',
+        'code': code,
+        'redirect_uri': redirect_uri,
+        'client_id': client_id,
+        'code_verifier': code_verifier
+    })
+
+    url = 'https://accounts.spotify.com/api/token'
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+
+    response = requests.post(url, headers=headers, data=body)
+
+    if response.status_code == 200:
+        data = response.json()
+        access_token = data['access_token']
+        with open('access_token.txt', 'w') as f:
+            f.write(access_token)
+        return redirect(url_for('profile'))
+    else:
+        return f"Error: HTTP status {response.status_code}", 400
+
+@app.route('/profile')
+def profile():
+    with open('access_token.txt', 'r') as f:
+        access_token = f.read()
+
+    profile_data = get_profile(access_token)
+    return json.dumps(profile_data, indent=2)
+
+def get_profile(access_token):
+    url = 'https://api.spotify.com/v1/me'
+    headers = {
+        'Authorization': f'Bearer {access_token}'
+    }
+
+    response = requests.get(url, headers=headers)
+    data = response.json()
+
+    return data
+
+@app.route('/create_playlist', methods=['POST'])
+def create_playlist():
+    name = request.form.get('name')
+    public = request.form.get('public', 'true').lower() == 'true'
+    with open('access_token.txt', 'r') as f:
+        access_token = f.read()
+
+    playlist = create_spotify_playlist(access_token, name, public)
+    return json.dumps(playlist, indent=2)
+
+def create_spotify_playlist(access_token, name, public):
+    me_data = get_profile(access_token)
+    user_id = me_data['id']
+    create_playlist_url = f"https://api.spotify.com/v1/users/{user_id}/playlists"
+
+    response = requests.post(
+        create_playlist_url,
         headers={
-            'Authorization': 'Basic ' + auth_header,
-            'Content-Type': 'application/x-www-form-urlencoded'
+            "Authorization": f"Bearer {access_token}"
         },
-        data={
-            'grant_type': 'authorization_code',
-            'code': auth_code,
-            'redirect_uri': REDIRECT_URI,
+        json={
+            "name": name,
+            "public": public
         }
     )
 
-    # Store the access token and refresh token in session
-    token_data = token_response.json()
-    session['access_token'] = token_data['access_token']
-    session['refresh_token'] = token_data['refresh_token']
-
-    # Redirect the user to the home page
-    return redirect('/home')
-
-@app.route('/home')
-def home():
-    # Make an authorized request to the Spotify API
-    access_token = session['access_token']
-    headers = {
-        'Authorization': 'Bearer ' + access_token
-    }
-    response = requests.get('https://api.spotify.com/v1/me', headers=headers)
-    user_data = response.json()
-    return 'Welcome, ' + user_data['display_name']
+    json_resp = response.json()
+    return json_resp
 
 if __name__ == '__main__':
     app.run(debug=True)
