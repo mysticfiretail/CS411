@@ -4,6 +4,15 @@ from flaskext.mysql import MySQL
 import flask_login
 import json
 import requests
+import os
+import requests
+import base64
+import json
+import random
+import hashlib
+from flask import Flask, request, redirect, url_for, render_template
+from urllib.parse import urlencode, urlparse, parse_qs
+
 
 
 mysql = MySQL()
