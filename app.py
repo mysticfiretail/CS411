@@ -148,8 +148,8 @@ def profile():
     with open('access_token.txt', 'r') as f:
         access_token = f.read()
 
-    profile_data = get_profile(access_token)
-    return json.dumps(profile_data, indent=2)
+    #profile_data = get_profile(access_token)
+    return render_template("hello.html")#json.dumps(profile_data, indent=2)  ############### problem area
 
 def get_profile(access_token):
     url = 'https://api.spotify.com/v1/me'
