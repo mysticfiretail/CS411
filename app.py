@@ -4,14 +4,6 @@ from flaskext.mysql import MySQL
 import flask_login
 import json
 import requests
-import os
-import requests
-import base64
-import json
-import random
-import hashlib
-from flask import Flask, request, redirect, url_for, render_template
-from urllib.parse import urlencode, urlparse, parse_qs
 
 
 mysql = MySQL()
@@ -35,18 +27,24 @@ users = cursor.fetchall()
 def get_tem(unit = 'fahrenheit'): #use boston location by default
     la = request.form.get('latitude')
     lo = request.form.get('longtitude')
-    url = f"https://api.open-meteo.com/v1/forecast?latitude={la}&longitude={lo}&hourly=temperature_2m&temperature_unit={unit}"
+    #url = f"https://api.open-meteo.com/v1/forecast?latitude={la}&longitude={lo}&hourly=temperature_2m&temperature_unit={unit}"
     #api call:
-    response = requests.get(url)
+    #response = requests.get(url)
     #retrieve the daily temperature forecast from the JSON response using dictionary indexing, and print it to the console
-    if response.status_code == 200:
+    #if response.status_code == 200:
         #data = response.json()
         #parsed = json.load(response.text)
-        pretty_json = json.dumps(response.json()['hourly']['temperature_2m'], indent=4, sort_keys=True)
+        #pretty_json = json.dumps(response.json()['hourly']['temperature_2m'], indent=4, sort_keys=True)
         #hourly_data = data['hourly']['temperature_2m']
-        return pretty_json
+        #return pretty_json
+    #else:
+        #print(f"Error: {response.status_code}")
+    wc = get_wc(la,lo)
+    if wc is not None:
+        m = json.dumps(wc, indent=4, sort_keys=True)
+        return m
     else:
-        print(f"Error: {response.status_code}")
+        return json.dumps("Oops, some errors occured", indent=4, sort_keys=True)
 
 
 @app.route('/logout')
