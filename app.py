@@ -4,12 +4,6 @@ from flaskext.mysql import MySQL
 import flask_login
 import json
 import requests
-<<<<<<< HEAD
-from get_weathercode import get_wc
-import sqlite3
-
-#from loc import get_location
-=======
 import os
 import requests
 import base64
@@ -20,7 +14,6 @@ from flask import Flask, request, redirect, url_for, render_template
 from urllib.parse import urlencode, urlparse, parse_qs
 
 
->>>>>>> 5cf1223756b48b17e9e26d9557d4a7051510b553
 
 mysql = MySQL()
 app = Flask(__name__)
@@ -28,11 +21,7 @@ app.secret_key = 'super secret string'  # Change this!
 
 #These will need to be changed according to your creditionals
 app.config['MYSQL_DATABASE_USER'] = 'root'
-<<<<<<< HEAD
-app.config['MYSQL_DATABASE_PASSWORD'] = 'Mysqlajue666'
-=======
 app.config['MYSQL_DATABASE_PASSWORD'] = 'cs460cs460'
->>>>>>> 5cf1223756b48b17e9e26d9557d4a7051510b553
 app.config['MYSQL_DATABASE_DB'] = 'photoshare'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
