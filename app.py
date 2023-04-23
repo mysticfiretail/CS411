@@ -12,8 +12,9 @@ import random
 import hashlib
 from flask import Flask, request, redirect, url_for, render_template
 from urllib.parse import urlencode, urlparse, parse_qs
+from get_weathercode import get_wc
 
-
+################################Test################################
 
 mysql = MySQL()
 app = Flask(__name__)
