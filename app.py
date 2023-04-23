@@ -14,7 +14,7 @@ from flask import Flask, request, redirect, url_for, render_template
 from urllib.parse import urlencode, urlparse, parse_qs
 from get_weathercode import get_wc
 
-
+################################Test################################
 
 mysql = MySQL()
 app = Flask(__name__)
@@ -22,6 +22,9 @@ app.secret_key = 'super secret string'  # Change this!
 
 #These will need to be changed according to your creditionals
 app.config['MYSQL_DATABASE_USER'] = 'root'
+
+app.config['MYSQL_DATABASE_PASSWORD'] = 'Mysqlajue666'
+
 app.config['MYSQL_DATABASE_PASSWORD'] = 'Mysqlajue666'
 app.config['MYSQL_DATABASE_DB'] = 'photoshare'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
@@ -33,7 +36,8 @@ mysql.init_app(app)
 #users = cursor.fetchall()
 # connect to the GeoNames SQLite database
 # configure the database path
-'''DATABASE = 'geonames.db'
+'''
+DATABASE = 'geonames.db'
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -56,7 +60,7 @@ def index():
     countries = cursor.fetchall()
 
     return render_template('index.html', countries=countries)
-'''
+
 @app.route('/getCities', methods=['POST'])
 def getCities():
     # retrieve the selected country from the request data
@@ -84,7 +88,7 @@ def getCities():
     
     # return the location data as a string
     #return json.dumps(str(lat) + ',' + str(lon), indent=4, sort_keys=True)
-
+'''
 @app.route('/weather', methods=['POST'])
 def get_tem(unit = 'fahrenheit'): #use boston location by default
     la = request.form.get('latitude')
@@ -187,22 +191,37 @@ def callback():
 
     response = requests.post(url, headers=headers, data=body)
 
+    response_data = json.loads(response.text)
+    access_token = response_data["access_token"]
+    refresh_token = response_data["refresh_token"]
+    token_type = response_data["token_type"]
+    expires_in = response_data["expires_in"]
+
+    authorization_header = {"Authorization": "Bearer {}".format(access_token)}
+   
+    user_profile_api_endpoint = "https://api.spotify.com/v1/me"
+    profile_response = requests.get(user_profile_api_endpoint, headers=authorization_header)
+    profile_data = json.loads(profile_response.text)
+
+    print(profile_data)
+
     if response.status_code == 200:
         data = response.json()
         access_token = data['access_token']
         with open('access_token.txt', 'w') as f:
             f.write(access_token)
-        return redirect(url_for('profile'))
+        return render_template("Hello.html")
     else:
         return f"Error: HTTP status {response.status_code}", 400
-
+    
+'''
 @app.route('/profile')
 def profile():
     with open('access_token.txt', 'r') as f:
         access_token = f.read()
 
-    #profile_data = get_profile(access_token)
-    return render_template("hello.html")#json.dumps(profile_data, indent=2)  ############### problem area
+    profile_data = get_profile(access_token)
+    return json.dumps(profile_data, indent=2) #render_template("hello.html")  ############### problem area
 
 def get_profile(access_token):
     url = 'https://api.spotify.com/v1/me'
@@ -213,8 +232,8 @@ def get_profile(access_token):
     response = requests.get(url, headers=headers)
     data = response.json()
 
-    return render_template('hello.html')
-
+    return data#render_template('hello.html')
+'''
 @app.route('/create_playlist', methods=['POST'])
 def create_playlist():
     name = request.form.get('name')
@@ -243,6 +262,28 @@ def create_spotify_playlist(access_token, name, public):
 
     json_resp = response.json()
     return json_resp
+
+@app.route('/get_category_playlists')
+def get_category_playlists():
+    with open('access_token.txt', 'r') as f:
+        access_token = f.read()
+
+    category_id = 'dinner'  #replace with weather 
+    limit = 10  #will get 10 songs 
+
+    playlists_data = get_category_playlists_data(access_token, category_id, limit)
+    return json.dumps(playlists_data, indent=2)
+
+def get_category_playlists_data(access_token, category_id, limit):
+    url = f'https://api.spotify.com/v1/browse/categories/{category_id}/playlists?limit={limit}'
+    headers = {
+        'Authorization': f'Bearer {access_token}'
+    }
+
+    response = requests.get(url, headers=headers)
+    data = response.json()
+
+    return data
 
 #default page
 @app.route("/5000/", methods=['GET'])
