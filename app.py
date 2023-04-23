@@ -21,9 +21,9 @@ app.secret_key = 'super secret string'  # Change this!
 
 #These will need to be changed according to your creditionals
 app.config['MYSQL_DATABASE_USER'] = 'root'
-<<<<<<< HEAD
-app.config['MYSQL_DATABASE_PASSWORD'] = 'Mysqlajue666'
-=======
+
+app.config['MYSQL_DATABASE_PASSWORD'] = 'cs460cs460'
+
 app.config['MYSQL_DATABASE_PASSWORD'] = 'cs460cs460'
 app.config['MYSQL_DATABASE_DB'] = 'photoshare'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
@@ -35,6 +35,7 @@ mysql.init_app(app)
 #users = cursor.fetchall()
 # connect to the GeoNames SQLite database
 # configure the database path
+'''
 DATABASE = 'geonames.db'
 
 def get_db():
@@ -86,7 +87,7 @@ def getCities():
     
     # return the location data as a string
     #return json.dumps(str(lat) + ',' + str(lon), indent=4, sort_keys=True)
-
+'''
 @app.route('/weather', methods=['POST'])
 def get_tem(unit = 'fahrenheit'): #use boston location by default
     la = request.form.get('latitude')
@@ -189,15 +190,30 @@ def callback():
 
     response = requests.post(url, headers=headers, data=body)
 
+    response_data = json.loads(response.text)
+    access_token = response_data["access_token"]
+    refresh_token = response_data["refresh_token"]
+    token_type = response_data["token_type"]
+    expires_in = response_data["expires_in"]
+
+    authorization_header = {"Authorization": "Bearer {}".format(access_token)}
+   
+    user_profile_api_endpoint = "https://api.spotify.com/v1/me"
+    profile_response = requests.get(user_profile_api_endpoint, headers=authorization_header)
+    profile_data = json.loads(profile_response.text)
+
+    print(profile_data)
+
     if response.status_code == 200:
         data = response.json()
         access_token = data['access_token']
         with open('access_token.txt', 'w') as f:
             f.write(access_token)
-        return redirect(url_for('profile'))
+        return render_template("Hello.html")
     else:
         return f"Error: HTTP status {response.status_code}", 400
-
+    
+'''
 @app.route('/profile')
 def profile():
     with open('access_token.txt', 'r') as f:
@@ -215,8 +231,8 @@ def get_profile(access_token):
     response = requests.get(url, headers=headers)
     data = response.json()
 
-    return render_template('hello.html')
-
+    return data#render_template('hello.html')
+'''
 @app.route('/create_playlist', methods=['POST'])
 def create_playlist():
     name = request.form.get('name')
