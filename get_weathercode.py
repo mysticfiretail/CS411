@@ -48,3 +48,4 @@ def get_wc(la = 42.36,lo=-71.06, unit = 'fahrenheit'): #use boston location by d
         return n
     else:
         print(f"Error: {response.status_code}")
+print(get_wc())

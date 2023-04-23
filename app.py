@@ -12,6 +12,7 @@ import random
 import hashlib
 from flask import Flask, request, redirect, url_for, render_template
 from urllib.parse import urlencode, urlparse, parse_qs
+from get_weathercode import get_wc
 
 
 
@@ -21,7 +22,7 @@ app.secret_key = 'super secret string'  # Change this!
 
 #These will need to be changed according to your creditionals
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'cs460cs460'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'Mysqlajue666'
 app.config['MYSQL_DATABASE_DB'] = 'photoshare'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
@@ -32,7 +33,7 @@ mysql.init_app(app)
 #users = cursor.fetchall()
 # connect to the GeoNames SQLite database
 # configure the database path
-DATABASE = 'geonames.db'
+'''DATABASE = 'geonames.db'
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -55,7 +56,7 @@ def index():
     countries = cursor.fetchall()
 
     return render_template('index.html', countries=countries)
-
+'''
 @app.route('/getCities', methods=['POST'])
 def getCities():
     # retrieve the selected country from the request data
