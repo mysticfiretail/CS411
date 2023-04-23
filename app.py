@@ -213,7 +213,26 @@ def callback():
     else:
         return f"Error: HTTP status {response.status_code}", 400
     
+'''
+@app.route('/profile')
+def profile():
+    with open('access_token.txt', 'r') as f:
+        access_token = f.read()
 
+    profile_data = get_profile(access_token)
+    return json.dumps(profile_data, indent=2) #render_template("hello.html")  ############### problem area
+
+def get_profile(access_token):
+    url = 'https://api.spotify.com/v1/me'
+    headers = {
+        'Authorization': f'Bearer {access_token}'
+    }
+
+    response = requests.get(url, headers=headers)
+    data = response.json()
+
+    return data#render_template('hello.html')
+'''
 @app.route('/create_playlist', methods=['POST'])
 def create_playlist():
     name = request.form.get('name')
