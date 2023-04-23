@@ -5,7 +5,6 @@ from geopy.exc import GeocoderTimedOut
 def get_lat_long(city):
     #convert it to lower cases, make it more efficient
     city = city.lower()
-    print(city)
     geolocator = Nominatim(user_agent="my_app")
     try:
         location = geolocator.geocode(city, timeout=10)

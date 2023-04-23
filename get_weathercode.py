@@ -32,7 +32,10 @@ weather_dict = {
 
 def get_wc(la = 42.36,lo=-71.06, unit = 'fahrenheit'): #use boston location by default
     #url
-    url = f"https://api.open-meteo.com/v1/forecast?latitude={la}&longitude={lo}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=America%2FNew_York&temperature_unit={unit}"
+    if unit == 'fahrenheit':
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={la}&longitude={lo}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=America%2FNew_York&temperature_unit={unit}"
+    else:
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={la}&longitude={lo}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=America%2FNew_York"
     #api call:
     response = requests.get(url)
     #retrieve the daily temperature forecast from the JSON response using dictionary indexing, and print it to the console
