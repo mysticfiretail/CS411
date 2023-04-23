@@ -199,7 +199,7 @@ def callback():
 
     authorization_header = {"Authorization": "Bearer {}".format(access_token)}
    
-    user_profile_api_endpoint = "https://api.spotify.com/v1/me"
+    user_profile_api_endpoint = "https://api.spotify.com/v1"
     profile_response = requests.get(user_profile_api_endpoint, headers=authorization_header)
     profile_data = json.loads(profile_response.text)
 
