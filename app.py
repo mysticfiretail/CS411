@@ -23,9 +23,9 @@ app.secret_key = 'super secret string'  # Change this!
 #These will need to be changed according to your creditionals
 app.config['MYSQL_DATABASE_USER'] = 'root'
 
-app.config['MYSQL_DATABASE_PASSWORD'] = 'Mysqlajue666'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'cs460cs460'
 
-app.config['MYSQL_DATABASE_PASSWORD'] = 'Mysqlajue666'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'cs460cs460'
 app.config['MYSQL_DATABASE_DB'] = 'photoshare'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
@@ -199,7 +199,7 @@ def callback():
 
     authorization_header = {"Authorization": "Bearer {}".format(access_token)}
    
-    user_profile_api_endpoint = "https://api.spotify.com/v1/me"
+    user_profile_api_endpoint = "https://api.spotify.com/v1"
     profile_response = requests.get(user_profile_api_endpoint, headers=authorization_header)
     profile_data = json.loads(profile_response.text)
 
