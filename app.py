@@ -114,13 +114,13 @@ def get_tem(unit = 'fahrenheit'): #use boston location by default
         lat,long = get_lat_long(cityName)
     else:
         lat,long = get_current_location()
-    wc = get_wc(lat,long)
+    wc,wcNum = get_wc(lat,long)
     if wc is not None:
         m = json.dumps(wc, indent=4, sort_keys=True)
         print(lat,long)
         return m
     else:
-        return json.dumps("Oops, some errors occured", indent=4, sort_keys=True)
+        return json.dumps("Oops, some errors occured", indent=4, sort_keys=False)
     
 def get_lat_long(city):
     #convert it to lower cases, make it more efficient
@@ -142,6 +142,32 @@ def get_current_location():
     latitude = json_result['latitude']
     longitude = json_result['longitude']
     return latitude, longitude
+
+def get_wc_music(wcNum):
+    match wcNum:
+        case 1 | 0:
+            print("Clear")
+
+        case 2|3|45|48:
+            print("Overcast")
+
+        case wcNum if 51 <= wcNum <=  57:
+            print("Drizzle")
+        
+        case wcNum if (61 <= wcNum <=  67) |  (81 <= wcNum <=  86):
+            print("Rain")
+
+        case  wcNum if (71 <= wcNum <=  77)|85|86:
+            print("snow <3")
+
+        case wcNum if (95 <= wcNum <=  99):
+            print("Thunderstorm")
+
+        case _:
+            print("The language doesn't matter, what matters is solving problems.")
+
+
+
     
 
 

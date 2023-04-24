@@ -30,7 +30,7 @@ weather_dict = {
     99: 'Thunderstorm with hail: Heavy intensity'
 }
 
-def get_wc(la = 42.36,lo=-71.06, unit = 'fahrenheit'): #use boston location by default
+def get_wc(la,lo, unit = 'fahrenheit'): #use boston location by default
     #url
     if unit == 'fahrenheit':
         url = f"https://api.open-meteo.com/v1/forecast?latitude={la}&longitude={lo}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=America%2FNew_York&temperature_unit={unit}"
@@ -46,8 +46,7 @@ def get_wc(la = 42.36,lo=-71.06, unit = 'fahrenheit'): #use boston location by d
         n = []
         for x in weathercodes:
             n.append(weather_dict[x])
-        return n
+        return n,weathercodes
     else:
         print(f"Error: {response.status_code}")
 
-print(get_wc())
