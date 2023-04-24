@@ -13,6 +13,9 @@ import hashlib
 from flask import Flask, request, redirect, url_for, render_template
 from urllib.parse import urlencode, urlparse, parse_qs
 from get_weathercode import get_wc
+from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut
+import requests
 
 ################################Test################################
 
@@ -91,8 +94,9 @@ def getCities():
 '''
 @app.route('/weather', methods=['POST'])
 def get_tem(unit = 'fahrenheit'): #use boston location by default
-    la = request.form.get('latitude')
-    lo = request.form.get('longtitude')
+    #la = request.form.get('latitude')
+    #lo = request.form.get('longtitude')
+
     #url = f"https://api.open-meteo.com/v1/forecast?latitude={la}&longitude={lo}&hourly=temperature_2m&temperature_unit={unit}"
     #api call:
     #response = requests.get(url)
@@ -105,12 +109,41 @@ def get_tem(unit = 'fahrenheit'): #use boston location by default
         #return pretty_json
     #else:
         #print(f"Error: {response.status_code}")
-    wc = get_wc(la,lo)
+    cityName = request.form.get('city')
+    if cityName != "":
+        lat,long = get_lat_long(cityName)
+    else:
+        lat,long = get_current_location()
+    wc = get_wc(lat,long)
     if wc is not None:
         m = json.dumps(wc, indent=4, sort_keys=True)
+        print(lat,long)
         return m
     else:
         return json.dumps("Oops, some errors occured", indent=4, sort_keys=True)
+    
+def get_lat_long(city):
+    #convert it to lower cases, make it more efficient
+    city = city.lower()
+    geolocator = Nominatim(user_agent="my_app")
+    try:
+        location = geolocator.geocode(city, timeout=10)
+        if location is None:
+            return None
+        else:
+            return location.latitude, location.longitude
+    except GeocoderTimedOut:
+        return None
+    
+def get_current_location():
+    payload = {'key': 'AC734C7771F717B36767BB165121F669', 'ip': requests.get('https://api.ipify.org').text, 'format': 'json'}
+    api_result = requests.get('https://api.ip2location.io/', params=payload)
+    json_result = api_result.json()
+    latitude = json_result['latitude']
+    longitude = json_result['longitude']
+    return latitude, longitude
+    
+
 
 
 @app.route('/logout')

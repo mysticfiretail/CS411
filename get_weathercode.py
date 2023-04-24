@@ -42,9 +42,12 @@ def get_wc(la = 42.36,lo=-71.06, unit = 'fahrenheit'): #use boston location by d
     if response.status_code == 200:
         data = response.json()
         weathercodes = data['daily']['weathercode']
+        print(weathercodes)
         n = []
         for x in weathercodes:
             n.append(weather_dict[x])
         return n
     else:
         print(f"Error: {response.status_code}")
+
+print(get_wc())
