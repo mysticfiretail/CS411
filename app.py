@@ -100,12 +100,12 @@ print("d1 =", d1)
 print(str(d1))
 
 seed_track_bank = {  #list of seed-songs with spotify song ID's
-    "sunny": "2RCkd4tms3VOEoTErKzInS", #Don't want to fall in love
-    "overcast": "7FMedJPiag48GjON0tp2PO", #crane your neck
-    "drizzle": "6iCJCZqDJjmBxt07Oid6FI", #buttercup 
-    "rain": "72Q3BQhu0w6A81ouAUp7UL", #rain in june
-    "snow": "6iCJCZqDJjmBxt07Oid6FI", #all i want for chistmas
-    "thunderstrom": "73CMRj62VK8nUS4ezD2wvi" #set fire to the rain 
+    "sunny": ["2RCkd4tms3VOEoTErKzInS","4sNG6zQBmtq7M8aeeKJRMQ","5euumi7eqEgmxvCIJw2pSp","5bzf1xrbqr1ttjAJuRz2xY"], #Don't want to fall in love
+    "overcast": ["7FMedJPiag48GjON0tp2PO","1gcyHQpBQ1lfXGdhZmWrHP","4yugZvBYaoREkJKtbG08Qr","1K3LRUEcUz5FMtPYyg0F45"], #crane your neck
+    "drizzle": ["6iCJCZqDJjmBxt07Oid6FI","7eqoqGkKwgOaWNNHx90uEZ","4U45aEWtQhrm8A5mxPaFZ7","75TDPu9k7Yv3IovdYaNCwk"], #buttercup 
+    "rain": ["72Q3BQhu0w6A81ouAUp7UL","2GiJYvgVaD2HtM8GqD9EgQ","4s6LhHAV5SEsOV0lC2tjvJ","77KnJc8o5G1eKVwX5ywMeZ" ],#rain in june
+    "snow": ["6iCJCZqDJjmBxt07Oid6FI","2QjOHCTQ1Jl3zawyYOpxh6","7F5oktn5YOsR9eR5YsFtqb","5uPpzqixdzAMXprr4P5aT5"], #all i want for chistmas
+    "thunderstrom": ["73CMRj62VK8nUS4ezD2wvi", "1eyzqe2QqGZUmfcPZtrIyt", "0hNhlwnzMLzZSlKGDCuHOo","0qUcpOOna3kkrwfqky85e1"] #set fire to the rain 
     }
 
 @app.route('/weather', methods=['POST'])
@@ -374,7 +374,7 @@ def create_playlist(weather_codes):
     playlist_id = playlist["id"]
 
     for weather_code in weather_codes:
-        seed_track = seed_track_bank[weather_code]
+        seed_track = random.choice(tuple(seed_track_bank[weather_code]))
         recommended_songs = get_song_recommendations(access_token, [seed_track], limit=2)
         track_ids = [song['id'] for song in recommended_songs]
         add_tracks_to_playlist(access_token, playlist_id, track_ids)
