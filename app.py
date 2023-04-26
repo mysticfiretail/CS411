@@ -99,6 +99,15 @@ d1 = today.strftime("%m-%d")
 print("d1 =", d1)
 print(str(d1))
 
+seed_track_bank = {  #list of seed-songs with spotify song ID's
+    "sunny": "2RCkd4tms3VOEoTErKzInS", #Don't want to fall in love
+    "overcast": "7FMedJPiag48GjON0tp2PO", #crane your neck
+    "drizzle": "6iCJCZqDJjmBxt07Oid6FI", #buttercup 
+    "rain": "72Q3BQhu0w6A81ouAUp7UL", #rain in june
+    "snow": "6iCJCZqDJjmBxt07Oid6FI", #all i want for chistmas
+    "thunderstrom": "73CMRj62VK8nUS4ezD2wvi" #set fire to the rain 
+    }
+
 @app.route('/weather', methods=['POST'])
 def get_tem(unit = 'fahrenheit'): #use boston location by default
     #la = request.form.get('latitude')
@@ -125,7 +134,10 @@ def get_tem(unit = 'fahrenheit'): #use boston location by default
     if wc is not None:
         m = json.dumps(wc, indent=4, sort_keys=True)
         print(lat,long)
-        create_playlist()
+        translation = []
+        for p in range (len(wcNum)):
+           translation.append(get_wc_music(p))
+        create_playlist(translation)
         return m
     else:
         return json.dumps("Oops, some errors occured", indent=4, sort_keys=False)
@@ -154,26 +166,48 @@ def get_current_location():
 def get_wc_music(wcNum):
     match wcNum:
         case 1 | 0:
-            print("Clear")
+            return ("sunny")
 
         case 2|3|45|48:
-            print("Overcast")
+            return("overcast")
 
         case wcNum if 51 <= wcNum <=  57:
-            print("Drizzle")
+            return("drizzle")
         
         case wcNum if (61 <= wcNum <=  67) |  (81 <= wcNum <=  86):
-            print("Rain")
+            return("rain")
 
         case  wcNum if (71 <= wcNum <=  77)|85|86:
-            print("snow <3")
+            return("snow")
 
         case wcNum if (95 <= wcNum <=  99):
-            print("Thunderstorm")
+            return("thunderstorm")
 
         case _:
-            print("The language doesn't matter, what matters is solving problems.")
+            return("sunny")
 
+def get_song_recommendations(access_token, seed_tracks, limit=2):
+    seed_tracks = ','.join(seed_tracks)
+    url = f'https://api.spotify.com/v1/recommendations?seed_tracks={seed_tracks}&limit={limit}'
+    headers = {
+        'Authorization': f'Bearer {access_token}'
+    }
+
+    response = requests.get(url, headers=headers)
+    data = response.json()
+
+    return data['tracks']
+
+def add_tracks_to_playlist(access_token, playlist_id, track_ids):
+    url = f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks'
+    headers = {
+        'Authorization': f'Bearer {access_token}'
+    }
+    json_data = {
+        'uris': [f'spotify:track:{track_id}' for track_id in track_ids]
+    }
+    response = requests.post(url, headers=headers, json=json_data)
+    return response.status_code
 
 
     
@@ -330,13 +364,21 @@ def get_profile(access_token):
     return data#render_template('hello.html')
 '''
 @app.route('/create_playlist', methods=['POST'])
-def create_playlist():
+def create_playlist(weather_codes):
     name = "5 Day forecast " + d1
-    public ='true'
+    public = 'true'
     with open('access_token.txt', 'r') as f:
         access_token = f.read()
 
     playlist = create_spotify_playlist(access_token, name, public)
+    playlist_id = playlist["id"]
+
+    for weather_code in weather_codes:
+        seed_track = seed_track_bank[weather_code]
+        recommended_songs = get_song_recommendations(access_token, [seed_track], limit=2)
+        track_ids = [song['id'] for song in recommended_songs]
+        add_tracks_to_playlist(access_token, playlist_id, track_ids)
+
     return json.dumps(playlist, indent=2)
 
 def create_spotify_playlist(access_token, name, public):
