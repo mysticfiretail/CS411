@@ -49,4 +49,3 @@ def get_wc(la,lo, unit = 'fahrenheit'): #use boston location by default
         return n,weathercodes
     else:
         print(f"Error: {response.status_code}")
-
