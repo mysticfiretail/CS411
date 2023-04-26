@@ -16,6 +16,7 @@ from get_weathercode import get_wc
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
 import requests
+from datetime import date
 
 ################################Test################################
 
@@ -92,6 +93,12 @@ def getCities():
     # return the location data as a string
     #return json.dumps(str(lat) + ',' + str(lon), indent=4, sort_keys=True)
 '''
+today = date.today()
+
+d1 = today.strftime("%m-%d")
+print("d1 =", d1)
+print(str(d1))
+
 @app.route('/weather', methods=['POST'])
 def get_tem(unit = 'fahrenheit'): #use boston location by default
     #la = request.form.get('latitude')
@@ -118,6 +125,7 @@ def get_tem(unit = 'fahrenheit'): #use boston location by default
     if wc is not None:
         m = json.dumps(wc, indent=4, sort_keys=True)
         print(lat,long)
+        create_playlist()
         return m
     else:
         return json.dumps("Oops, some errors occured", indent=4, sort_keys=False)
@@ -208,10 +216,11 @@ def generate_code_challenge(code_verifier):
 
 @app.route('/')
 def authorize():
+    print("AUTHORZING")
     code_verifier = generate_random_string(128)
     code_challenge = generate_code_challenge(code_verifier)
     state = generate_random_string(16)
-    scope = 'user-read-private user-read-email'
+    scope = 'user-top-read user-read-private user-read-email playlist-modify-public playlist-modify-private'
 
     with open('code_verifier.txt', 'w') as f:
         f.write(code_verifier)
@@ -258,9 +267,12 @@ def callback():
 
     authorization_header = {"Authorization": "Bearer {}".format(access_token)}
    
-    user_profile_api_endpoint = "https://api.spotify.com/v1"
+    user_profile_api_endpoint = "https://api.spotify.com/v1/me"
     profile_response = requests.get(user_profile_api_endpoint, headers=authorization_header)
+    print(profile_response)
     profile_data = json.loads(profile_response.text)
+    with open('profile_data.txt', 'w') as f:
+            f.write(json.dumps(profile_data))
 
     print(profile_data)
 
@@ -273,6 +285,30 @@ def callback():
     else:
         return f"Error: HTTP status {response.status_code}", 400
     
+def get_profile(access_token):
+    code = request.args.get('code')
+    with open('code_verifier.txt', 'r') as f:
+        code_verifier = f.read()
+        body = urlencode({
+        'grant_type': 'authorization_code',
+        'code': code,
+        'redirect_uri': REDIRECT_URI,
+        'client_id': client_id,
+        'code_verifier': code_verifier
+    })
+    
+    url = 'https://accounts.spotify.com/api/token'
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+    response = requests.post(url, headers=headers, data=body)
+    authorization_header = {"Authorization": "Bearer {}".format(access_token)}
+     
+    user_profile_api_endpoint = "https://api.spotify.com/v1"
+    profile_response = requests.get(user_profile_api_endpoint, headers=authorization_header)
+    profile_data = json.loads(profile_response.text)
+    return profile_data
+
 '''
 @app.route('/profile')
 def profile():
@@ -295,8 +331,8 @@ def get_profile(access_token):
 '''
 @app.route('/create_playlist', methods=['POST'])
 def create_playlist():
-    name = request.form.get('name')
-    public = request.form.get('public', 'true').lower() == 'true'
+    name = "5 Day forecast " + d1
+    public ='true'
     with open('access_token.txt', 'r') as f:
         access_token = f.read()
 
@@ -304,8 +340,11 @@ def create_playlist():
     return json.dumps(playlist, indent=2)
 
 def create_spotify_playlist(access_token, name, public):
-    me_data = get_profile(access_token)
-    user_id = me_data['id']
+    #me_data = get_profile(access_token)
+    with open('profile_data.txt') as f:
+        profile_data = f.read()
+    data = json.loads(profile_data)
+    user_id = data['id']
     create_playlist_url = f"https://api.spotify.com/v1/users/{user_id}/playlists"
 
     response = requests.post(
