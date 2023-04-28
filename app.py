@@ -22,17 +22,17 @@ from datetime import date
 
 mysql = MySQL()
 app = Flask(__name__)
-app.secret_key = 'super secret string'  # Change this!
+app.secret_key = 'shhitsasecret'  # Change this!
 
 #These will need to be changed according to your creditionals
 app.config['MYSQL_DATABASE_USER'] = 'root'
-
 app.config['MYSQL_DATABASE_PASSWORD'] = 'cs460cs460'
-
-app.config['MYSQL_DATABASE_PASSWORD'] = 'cs460cs460'
-app.config['MYSQL_DATABASE_DB'] = 'photoshare'
+app.config['MYSQL_DATABASE_DB'] = 'weather'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
+
+conn = mysql.connect()
+cursor = conn.cursor()
 
 #conn = mysql.connect()
 #cursor = conn.cursor()
@@ -211,8 +211,13 @@ def add_tracks_to_playlist(access_token, playlist_id, track_ids):
 
 
     
-
-
+@app.route('/newsletter', methods=['POST'])
+def uploadEmail():
+    email = request.form.get('email')
+    cursor = conn.cursor()
+    cursor.execute('''INSERT INTO USERS (email) VALUES (%s)''', (email))
+    conn.commit()
+    return (render_template('hello.html'))
 
 @app.route('/logout')
 def logout():
