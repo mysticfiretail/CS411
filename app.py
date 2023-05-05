@@ -33,66 +33,6 @@ mysql.init_app(app)
 
 conn = mysql.connect()
 cursor = conn.cursor()
-
-#conn = mysql.connect()
-#cursor = conn.cursor()
-#cursor.execute("SELECT email from Users")
-#users = cursor.fetchall()
-# connect to the GeoNames SQLite database
-# configure the database path
-'''
-DATABASE = 'geonames.db'
-
-def get_db():
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
-        db.row_factory = sqlite3.Row
-    return db
-
-@app.teardown_appcontext
-def close_db(error):
-    db = getattr(g, '_database', None)
-    if db is not None:
-        db.close()
-
-@app.route('/')
-def index():
-    # retrieve a list of all countries from the database
-    cursor = get_db().cursor()
-    cursor.execute("SELECT DISTINCT country_name FROM geonames ORDER BY country_name")
-    countries = cursor.fetchall()
-
-    return render_template('index.html', countries=countries)
-
-@app.route('/getCities', methods=['POST'])
-def getCities():
-    # retrieve the selected country from the request data
-    country = request.form['country']
-
-    # retrieve a list of all cities in the selected country
-    cursor = get_db().cursor()
-    cursor.execute("SELECT city_name, latitude, longitude FROM geonames WHERE country_name=?", (country,))
-    cities = cursor.fetchall()
-
-    # return the list of cities as a JSON response
-    return {'cities': cities}
-#@app.route('/getLocation', methods=['POST'])
-#def getLocation():
-    # get user's IP address
-    #ip = request.remote_addr
-    
-    # call an external API to get the user's location from their IP address
-    #response = requests.get('http://ip-api.com/json/'+ip)
-    #data = response.json()
-    
-    # extract latitude and longitude from the response
-    #lat = data['lat']
-   # lon = data['lon']
-    
-    # return the location data as a string
-    #return json.dumps(str(lat) + ',' + str(lon), indent=4, sort_keys=True)
-'''
 today = date.today()
 
 d1 = today.strftime("%m-%d")
@@ -105,40 +45,30 @@ seed_track_bank = {  #list of seed-songs with spotify song ID's
     "drizzle": ["6iCJCZqDJjmBxt07Oid6FI","7eqoqGkKwgOaWNNHx90uEZ","4U45aEWtQhrm8A5mxPaFZ7","75TDPu9k7Yv3IovdYaNCwk"], #buttercup 
     "rain": ["72Q3BQhu0w6A81ouAUp7UL","2GiJYvgVaD2HtM8GqD9EgQ","4s6LhHAV5SEsOV0lC2tjvJ","77KnJc8o5G1eKVwX5ywMeZ" ],#rain in june
     "snow": ["6iCJCZqDJjmBxt07Oid6FI","2QjOHCTQ1Jl3zawyYOpxh6","7F5oktn5YOsR9eR5YsFtqb","5uPpzqixdzAMXprr4P5aT5"], #all i want for chistmas
-    "thunderstrom": ["73CMRj62VK8nUS4ezD2wvi", "1eyzqe2QqGZUmfcPZtrIyt", "0hNhlwnzMLzZSlKGDCuHOo","0qUcpOOna3kkrwfqky85e1"] #set fire to the rain 
+    "thunderstorm": ["73CMRj62VK8nUS4ezD2wvi", "1eyzqe2QqGZUmfcPZtrIyt", "0hNhlwnzMLzZSlKGDCuHOo","0qUcpOOna3kkrwfqky85e1"] #set fire to the rain 
     }
 
 @app.route('/weather', methods=['POST'])
-def get_tem(unit = 'fahrenheit'): #use boston location by default
-    #la = request.form.get('latitude')
-    #lo = request.form.get('longtitude')
-
-    #url = f"https://api.open-meteo.com/v1/forecast?latitude={la}&longitude={lo}&hourly=temperature_2m&temperature_unit={unit}"
-    #api call:
-    #response = requests.get(url)
-    #retrieve the daily temperature forecast from the JSON response using dictionary indexing, and print it to the console
-    #if response.status_code == 200:
-        #data = response.json()
-        #parsed = json.load(response.text)
-        #pretty_json = json.dumps(response.json()['hourly']['temperature_2m'], indent=4, sort_keys=True)
-        #hourly_data = data['hourly']['temperature_2m']
-        #return pretty_json
-    #else:
-        #print(f"Error: {response.status_code}")
+def get_tem(unit = 'fahrenheit'): 
     cityName = request.form.get('city')
     if cityName != "":
         lat,long = get_lat_long(cityName)
     else:
-        lat,long = get_current_location()
+        lat,long,cityName = get_current_location()
     wc,wcNum = get_wc(lat,long)
     if wc is not None:
         m = json.dumps(wc, indent=4, sort_keys=True)
         print(lat,long)
         translation = []
+        imagelinks = []
         for p in range (len(wcNum)):
-           translation.append(get_wc_music(p))
-        create_playlist(translation)
-        return m
+           string,link = get_wc_music(wcNum[p])
+           translation.append(string)
+           imagelinks.append(link)
+        dump, playlist_uri,playlist_id = create_playlist(translation,cityName)
+        print(imagelinks)
+        print(playlist_id)
+        return render_template("weather.html",city=cityName, images = imagelinks, uri = playlist_uri, id = playlist_id)
     else:
         return json.dumps("Oops, some errors occured", indent=4, sort_keys=False)
     
@@ -159,32 +89,35 @@ def get_current_location():
     payload = {'key': 'AC734C7771F717B36767BB165121F669', 'ip': requests.get('https://api.ipify.org').text, 'format': 'json'}
     api_result = requests.get('https://api.ip2location.io/', params=payload)
     json_result = api_result.json()
+    city = json_result['city_name']
     latitude = json_result['latitude']
     longitude = json_result['longitude']
-    return latitude, longitude
+    print(longitude, latitude, city)
+    return latitude, longitude, city
+
 
 def get_wc_music(wcNum):
     match wcNum:
         case 1 | 0:
-            return ("sunny")
+            return ("sunny", 'images/Untitled_Artwork-1.png')
 
         case 2|3|45|48:
-            return("overcast")
+            return("overcast", 'images/Untitled_Artwork-3.png')
 
         case wcNum if 51 <= wcNum <=  57:
-            return("drizzle")
+            return("drizzle", 'images/Untitled_Artwork-5.png')
         
         case wcNum if (61 <= wcNum <=  67) |  (81 <= wcNum <=  86):
-            return("rain")
+            return("rain", 'images/Untitled_Artwork-6.png')
 
-        case  wcNum if (71 <= wcNum <=  77)|85|86:
-            return("snow")
+        case  wcNum if (71 <= wcNum <=  77)|wcNum==85|wcNum==86:
+            return("snow", 'images/Untitled_Artwork-4.png')
 
         case wcNum if (95 <= wcNum <=  99):
-            return("thunderstorm")
+            return("thunderstorm", 'images/Untitled_Artwork-7.png')
 
         case _:
-            return("sunny")
+            return("sunny", 'images/Untitled_Artwork-1.png')
 
 def get_song_recommendations(access_token, seed_tracks, limit=2):
     seed_tracks = ','.join(seed_tracks)
@@ -227,7 +160,6 @@ def logout():
 
 
 client_id = '961732832e4d40fb8d0f05531a1dbaf9'
-#redirect_uri = 'http://localhost/5000/'
 CLIENT_SIDE_URL = "http://127.0.0.1"
 PORT = 5000
 REDIRECT_URI = "{}:{}/callback/".format(CLIENT_SIDE_URL, PORT)
@@ -348,35 +280,18 @@ def get_profile(access_token):
     profile_data = json.loads(profile_response.text)
     return profile_data
 
-'''
-@app.route('/profile')
-def profile():
-    with open('access_token.txt', 'r') as f:
-        access_token = f.read()
 
-    profile_data = get_profile(access_token)
-    return json.dumps(profile_data, indent=2) #render_template("hello.html")  ############### problem area
-
-def get_profile(access_token):
-    url = 'https://api.spotify.com/v1/me'
-    headers = {
-        'Authorization': f'Bearer {access_token}'
-    }
-
-    response = requests.get(url, headers=headers)
-    data = response.json()
-
-    return data#render_template('hello.html')
-'''
 @app.route('/create_playlist', methods=['POST'])
-def create_playlist(weather_codes):
-    name = "5 Day forecast " + d1
+def create_playlist(weather_codes, city):
+    name = city+ " Forecast " + d1
     public = 'true'
     with open('access_token.txt', 'r') as f:
         access_token = f.read()
 
     playlist = create_spotify_playlist(access_token, name, public)
     playlist_id = playlist["id"]
+    play_list_uri = playlist["uri"]
+    print(play_list_uri)
 
     for weather_code in weather_codes:
         seed_track = random.choice(tuple(seed_track_bank[weather_code]))
@@ -384,7 +299,7 @@ def create_playlist(weather_codes):
         track_ids = [song['id'] for song in recommended_songs]
         add_tracks_to_playlist(access_token, playlist_id, track_ids)
 
-    return json.dumps(playlist, indent=2)
+    return json.dumps(playlist, indent=2),play_list_uri,playlist_id
 
 def create_spotify_playlist(access_token, name, public):
     #me_data = get_profile(access_token)

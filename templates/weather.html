@@ -1,0 +1,161 @@
+<!doctype html>
+
+<style>
+
+    h1 {
+      font-size: 40px;
+    }
+    
+    input[type=submit]{
+      background-color: #6199e2;
+      border: none;
+      color: white;
+      padding: 16px;
+      text-decoration: none;
+      display: inline-block;
+      margin: 6px 2px;
+      cursor: pointer;
+      font-size: 12px;
+      border-radius: 12px;
+    }
+    
+    body{
+      margin:0 auto;
+      width:80%;
+      padding: 0px;
+      font-family: 'Lexend Deca', sans-serif; 
+      color: #2E475D; 
+      text-align: center;
+    }
+    
+    input[type=email] {
+      border: 2px solid #6199e2;
+      border-radius: 4px;
+    }
+    
+    .Header{
+    align-items: center;
+    }
+
+    input:hover {
+    box-shadow: inset 0 0 100px 100px rgba(255, 255, 255, 0.3);
+}
+    
+.newsletter{
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      text-align: left;
+      padding: 10px;
+}
+
+.column {
+  float: left;
+  width: 10%;
+  padding: 20px;
+}
+
+/* Clear floats after image containers */
+.forecast::after {
+  width: 10%;
+  padding: 20px;
+  content: "";
+  clear: both;
+  display: table;
+  margin: 50px;
+}
+
+.Label {
+  display: inline-block;
+  vertical-align: bottom;
+}
+    
+    </style>
+    
+    <head>  
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>  
+<div class="page">
+    <div class="Header">
+        <h1>Your 7 Day Weather Forecast for {{city}}</h1>
+      <img src="{{url_for('static', filename='images/Untitled_Artwork-2.png')}}" alt="WeatherVibes Logo" style="  width: 300px; height: auto;">
+      </div>
+  
+      <div class="forecast">
+          {% for photo in images %}
+  
+          <div class="column">
+            <div class="Label">
+                {% if photo == 'images/Untitled_Artwork-1.png'%}
+                <h3>Sunny</h3>
+                {%else %}
+                  {%if photo == 'images/Untitled_Artwork-3.png'%}
+                  <h3>Overcast</h3>
+                  {%else %}
+                      {%if photo == 'images/Untitled_Artwork-5.png'%}
+                      <h3>Drizzling</h3>
+                      {%else %}
+                          {%if photo == 'images/Untitled_Artwork-6.png'%}
+                          <h3>Raining</h3>
+                          {%else %}
+                              {%if photo == 'images/Untitled_Artwork-4.png'%}
+                              <h3>Snowing</h3>
+                              {%else%} 
+                              <h3>Thunderstorm</h3>
+                              {%endif%}
+                              {%endif%}
+                              {%endif%}
+                              {%endif%}
+                {%endif%}
+              </div>
+              <img src="{{url_for('static', filename='')}}{{photo}}" width = 100 height=auto/>
+
+          </div>
+  
+  
+      {% endfor %}
+  
+      </div>  
+
+</div>
+
+<div id="embed-iframe">
+    <h2>Your tunes for the week: </h2>
+    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/{{id}}?utm_source=generator" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+    
+</div>
+
+    
+    <body>
+    
+    <div class="newsletter">
+      <form method="post" action="/newsletter">
+        <label for="email">Enter your email to subscribe to our newsletter!</label>
+        <input type="email" name="email" />
+        <input type="submit" />
+      </form>
+    </div>
+    
+    
+    
+    </body>
+    
+    
+    
+    <br><br><br>
+    
+    
+<script src="https://open.spotify.com/embed-podcast/iframe-api/v1" async>
+window.onSpotifyIframeApiReady = (IFrameAPI) => {
+  const element = document.getElementById('embed-iframe');
+  const options = {
+      uri: uri
+    };
+  const callback = (EmbedController) => {};
+  IFrameAPI.createController(element, options, callback);
+};
+</script>
+
+    
+    
+    

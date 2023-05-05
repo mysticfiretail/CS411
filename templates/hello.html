@@ -1,37 +1,93 @@
 <!doctype html>
 
+<style>
 
-<!--<form method="post" action="/weather">
-  <label for="longtitude">Enter your longtitude:</label>
-  <input type="longtitude" name="longtitude" /><br />
-  <label for="latitude">Enter your latitude:</label>
-  <input type="latitude" name="latitude" /><br />
-  <input type="submit" />
-</form>
+h1 {
+  font-size: 40px;
+}
 
-<br><br><br>
+input[type=submit]{
+  background-color: #6199e2;
+  border: none;
+  color: white;
+  padding: 16px;
+  text-decoration: none;
+  display: inline-block;
+  margin: 6px 2px;
+  cursor: pointer;
+  font-size: 12px;
+  border-radius: 12px;
+}
 
--->
+body{
+  margin:0 auto;
+  width:80%;
+  padding: 50px;
+  font-family: 'Lexend Deca', sans-serif; 
+  color: #2E475D; 
+  text-align: center;
+}
 
+.weatherSubmission{
+  margin: auto;
+  width: 640px; 
+  padding: 50px;
+  font-size: 18px;
+  font-family: 'Lexend Deca', sans-serif; 
+  color: #2E475D; 
+}
 
-<h1>Input city name or press submit to use current location</h1>
+input[type=city],[type=email] {
+  border: 2px solid #6199e2;
+  border-radius: 4px;
+}
+
+input:hover {
+    box-shadow: inset 0 0 100px 100px rgba(255, 255, 255, 0.3);
+}
+
+.Header{
+align-items: center;
+}
+
+.newsletter{
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  text-align: left;
+  padding: 10px;
+}
+
+</style>
+
+<head>  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>  
+
+<div class="Header">
+  <h1>Welcome to Weather Vibes</h1>
+<img src="{{url_for('static', filename='images/Untitled_Artwork-2.png')}}" alt="WeatherVibes Logo" style="  width: 300px; height: auto;">
+</div>
 
 
 <body>
 
+  <div class="weatherSubmission"></div>
   <form method="post" action="/weather">
-    <label for="longtitude">Enter your City:</label>
+    <label for="city">Enter your City:</label><br>
     <input type="city" name="city" /><br />
     <input type="submit" />
   </form>
 
-  <body>
+<div class="newsletter">
+  <form method="post" action="/newsletter">
+    <label for="email">Enter your email to subscribe to our newsletter!</label>
+    <input type="email" name="email" />
+    <input type="submit" />
+  </form>
+</div>
 
-    <form method="post" action="/newsletter">
-      <label for="email">Enter your email to subscribe to our newsletter!</label>
-      <input type="email" name="email" /><br />
-      <input type="submit" />
-    </form>
 
 
 </body>

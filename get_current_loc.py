@@ -8,3 +8,5 @@ def get_current_location():
     latitude = json_result['latitude']
     longitude = json_result['longitude']
     return latitude, longitude, city
+
+print(get_current_location())
