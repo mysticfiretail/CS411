@@ -1,6 +1,0 @@
-	Catherine		    Ming		                    Jue
-HTML / CSS	10	        Spotify API/OAUTH	10	        Weather API 	10
-MySQL	5	            Flask Backend	10	            Flask Backend	10
-Playlist/song math 	10				
-					
-TOTAL	25		               20		                        20
