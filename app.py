@@ -1,3 +1,6 @@
+######################### Weather Vibes #########################
+####### created by Jue Han, Ming Hill, and Catherine Vess #######
+
 import flask
 from flask import Flask, Response, request, render_template, redirect, url_for, g
 from flaskext.mysql import MySQL
@@ -22,7 +25,7 @@ from datetime import date
 
 mysql = MySQL()
 app = Flask(__name__)
-app.secret_key = 'shhitsasecret'  # Change this!
+app.secret_key = 'shhitsasecret' 
 
 #These will need to be changed according to your creditionals
 app.config['MYSQL_DATABASE_USER'] = 'root'
@@ -31,26 +34,30 @@ app.config['MYSQL_DATABASE_DB'] = 'weather'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
 
+#connect to MySQL
 conn = mysql.connect()
 cursor = conn.cursor()
-today = date.today()
 
+#get the date
+today = date.today()
 d1 = today.strftime("%m-%d")
-print("d1 =", d1)
-print(str(d1))
+#print("d1 =", d1)
+#print(str(d1))
 
 seed_track_bank = {  #list of seed-songs with spotify song ID's
-    "sunny": ["2RCkd4tms3VOEoTErKzInS","4sNG6zQBmtq7M8aeeKJRMQ","5euumi7eqEgmxvCIJw2pSp","5bzf1xrbqr1ttjAJuRz2xY"], #Don't want to fall in love
-    "overcast": ["7FMedJPiag48GjON0tp2PO","1gcyHQpBQ1lfXGdhZmWrHP","4yugZvBYaoREkJKtbG08Qr","1K3LRUEcUz5FMtPYyg0F45"], #crane your neck
-    "drizzle": ["6iCJCZqDJjmBxt07Oid6FI","7eqoqGkKwgOaWNNHx90uEZ","4U45aEWtQhrm8A5mxPaFZ7","75TDPu9k7Yv3IovdYaNCwk"], #buttercup 
-    "rain": ["72Q3BQhu0w6A81ouAUp7UL","2GiJYvgVaD2HtM8GqD9EgQ","4s6LhHAV5SEsOV0lC2tjvJ","77KnJc8o5G1eKVwX5ywMeZ" ],#rain in june
-    "snow": ["6iCJCZqDJjmBxt07Oid6FI","2QjOHCTQ1Jl3zawyYOpxh6","7F5oktn5YOsR9eR5YsFtqb","5uPpzqixdzAMXprr4P5aT5"], #all i want for chistmas
-    "thunderstorm": ["73CMRj62VK8nUS4ezD2wvi", "1eyzqe2QqGZUmfcPZtrIyt", "0hNhlwnzMLzZSlKGDCuHOo","0qUcpOOna3kkrwfqky85e1"] #set fire to the rain 
+    "sunny": ["2RCkd4tms3VOEoTErKzInS","4sNG6zQBmtq7M8aeeKJRMQ","5euumi7eqEgmxvCIJw2pSp","5bzf1xrbqr1ttjAJuRz2xY"], #Don't want to fall in love + more
+    "overcast": ["7FMedJPiag48GjON0tp2PO","1gcyHQpBQ1lfXGdhZmWrHP","4yugZvBYaoREkJKtbG08Qr","1K3LRUEcUz5FMtPYyg0F45"], #crane your neck + more
+    "drizzle": ["6iCJCZqDJjmBxt07Oid6FI","7eqoqGkKwgOaWNNHx90uEZ","4U45aEWtQhrm8A5mxPaFZ7","75TDPu9k7Yv3IovdYaNCwk"], #buttercup + more
+    "rain": ["72Q3BQhu0w6A81ouAUp7UL","2GiJYvgVaD2HtM8GqD9EgQ","4s6LhHAV5SEsOV0lC2tjvJ","77KnJc8o5G1eKVwX5ywMeZ" ],#rain in june + more
+    "snow": ["6iCJCZqDJjmBxt07Oid6FI","2QjOHCTQ1Jl3zawyYOpxh6","7F5oktn5YOsR9eR5YsFtqb","5uPpzqixdzAMXprr4P5aT5"], #all i want for chistmas + more
+    "thunderstorm": ["73CMRj62VK8nUS4ezD2wvi", "1eyzqe2QqGZUmfcPZtrIyt", "0hNhlwnzMLzZSlKGDCuHOo","0qUcpOOna3kkrwfqky85e1"] #set fire to the rain + more
     }
 
-@app.route('/weather', methods=['POST'])
+@app.route('/weather', methods=['POST']) #get lat, long, and cityname then get weather codes and then create_playlist + return template
 def get_tem(unit = 'fahrenheit'): 
     cityName = request.form.get('city')
+    limit = request.form["slider"]
+    print("limit = "+ limit)
     if cityName != "":
         lat,long = get_lat_long(cityName)
     else:
@@ -65,14 +72,14 @@ def get_tem(unit = 'fahrenheit'):
            string,link = get_wc_music(wcNum[p])
            translation.append(string)
            imagelinks.append(link)
-        dump, playlist_uri,playlist_id = create_playlist(translation,cityName)
+        dump, playlist_uri,playlist_id = create_playlist(translation,cityName, limit)
         print(imagelinks)
         print(playlist_id)
         return render_template("weather.html",city=cityName, images = imagelinks, uri = playlist_uri, id = playlist_id)
     else:
         return json.dumps("Oops, some errors occured", indent=4, sort_keys=False)
     
-def get_lat_long(city):
+def get_lat_long(city): #gets lat and long of city that was entered (based on a database)
     #convert it to lower cases, make it more efficient
     city = city.lower()
     geolocator = Nominatim(user_agent="my_app")
@@ -85,7 +92,7 @@ def get_lat_long(city):
     except GeocoderTimedOut:
         return None
     
-def get_current_location():
+def get_current_location(): #gets users lat and long through ip2location API
     payload = {'key': 'AC734C7771F717B36767BB165121F669', 'ip': requests.get('https://api.ipify.org').text, 'format': 'json'}
     api_result = requests.get('https://api.ip2location.io/', params=payload)
     json_result = api_result.json()
@@ -96,7 +103,7 @@ def get_current_location():
     return latitude, longitude, city
 
 
-def get_wc_music(wcNum):
+def get_wc_music(wcNum): #converts weather codes to type of weather and returns weather + proper image to be displayed
     match wcNum:
         case 1 | 0:
             return ("sunny", 'images/Untitled_Artwork-1.png')
@@ -119,7 +126,7 @@ def get_wc_music(wcNum):
         case _:
             return("sunny", 'images/Untitled_Artwork-1.png')
 
-def get_song_recommendations(access_token, seed_tracks, limit=2):
+def get_song_recommendations(access_token, seed_tracks, limit): #uses spotify API to gather recommendations based off of the seeds we entered 
     seed_tracks = ','.join(seed_tracks)
     url = f'https://api.spotify.com/v1/recommendations?seed_tracks={seed_tracks}&limit={limit}'
     headers = {
@@ -131,7 +138,7 @@ def get_song_recommendations(access_token, seed_tracks, limit=2):
 
     return data['tracks']
 
-def add_tracks_to_playlist(access_token, playlist_id, track_ids):
+def add_tracks_to_playlist(access_token, playlist_id, track_ids): #adds the tracks spotify returned to the new playlist
     url = f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks'
     headers = {
         'Authorization': f'Bearer {access_token}'
@@ -144,7 +151,7 @@ def add_tracks_to_playlist(access_token, playlist_id, track_ids):
 
 
     
-@app.route('/newsletter', methods=['POST'])
+@app.route('/newsletter', methods=['POST']) #returns home page after newsletter has been entered and submits email to MySQL database
 def uploadEmail():
     email = request.form.get('email')
     cursor = conn.cursor()
@@ -152,18 +159,15 @@ def uploadEmail():
     conn.commit()
     return (render_template('hello.html'))
 
-@app.route('/logout')
-def logout():
-    flask_login.logout_user()
-    return render_template('hello.html', message='Logged out')
 
-
-
+#important variables for spotify API
 client_id = '961732832e4d40fb8d0f05531a1dbaf9'
 CLIENT_SIDE_URL = "http://127.0.0.1"
 PORT = 5000
 REDIRECT_URI = "{}:{}/callback/".format(CLIENT_SIDE_URL, PORT)
 
+
+#additional functions for spotify API
 def generate_random_string(length):
     s = ''
     possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
@@ -185,6 +189,7 @@ def generate_code_challenge(code_verifier):
     digest = sha256_digest(data)
     return base64_url_encode(digest)
 
+#Spotify authentication process
 @app.route('/')
 def authorize():
     print("AUTHORZING")
@@ -209,6 +214,7 @@ def authorize():
     authorization_url = f'https://accounts.spotify.com/authorize?{args}'
     return redirect(authorization_url)
 
+#get user information from authentication
 @app.route('/callback/')
 def callback():
     code = request.args.get('code')
@@ -256,6 +262,7 @@ def callback():
     else:
         return f"Error: HTTP status {response.status_code}", 400
     
+#get users profile based off of the access token recieved  
 def get_profile(access_token):
     code = request.args.get('code')
     with open('code_verifier.txt', 'r') as f:
@@ -280,9 +287,9 @@ def get_profile(access_token):
     profile_data = json.loads(profile_response.text)
     return profile_data
 
-
+#create playlist and add songs to it through spotify API
 @app.route('/create_playlist', methods=['POST'])
-def create_playlist(weather_codes, city):
+def create_playlist(weather_codes, city, limit):
     name = city+ " Forecast " + d1
     public = 'true'
     with open('access_token.txt', 'r') as f:
@@ -293,16 +300,17 @@ def create_playlist(weather_codes, city):
     play_list_uri = playlist["uri"]
     print(play_list_uri)
 
+    #convert weather codes to songs 
     for weather_code in weather_codes:
         seed_track = random.choice(tuple(seed_track_bank[weather_code]))
-        recommended_songs = get_song_recommendations(access_token, [seed_track], limit=2)
+        recommended_songs = get_song_recommendations(access_token, [seed_track], limit)
         track_ids = [song['id'] for song in recommended_songs]
         add_tracks_to_playlist(access_token, playlist_id, track_ids)
 
     return json.dumps(playlist, indent=2),play_list_uri,playlist_id
 
+#physical creation of the playlist
 def create_spotify_playlist(access_token, name, public):
-    #me_data = get_profile(access_token)
     with open('profile_data.txt') as f:
         profile_data = f.read()
     data = json.loads(profile_data)
@@ -323,27 +331,6 @@ def create_spotify_playlist(access_token, name, public):
     json_resp = response.json()
     return json_resp
 
-@app.route('/get_category_playlists')
-def get_category_playlists():
-    with open('access_token.txt', 'r') as f:
-        access_token = f.read()
-
-    category_id = 'dinner'  #replace with weather 
-    limit = 10  #will get 10 songs 
-
-    playlists_data = get_category_playlists_data(access_token, category_id, limit)
-    return json.dumps(playlists_data, indent=2)
-
-def get_category_playlists_data(access_token, category_id, limit):
-    url = f'https://api.spotify.com/v1/browse/categories/{category_id}/playlists?limit={limit}'
-    headers = {
-        'Authorization': f'Bearer {access_token}'
-    }
-
-    response = requests.get(url, headers=headers)
-    data = response.json()
-
-    return data
 
 #default page
 @app.route("/5000/", methods=['GET'])

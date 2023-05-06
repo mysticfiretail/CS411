@@ -31,7 +31,7 @@ body{
 .weatherSubmission{
   margin: auto;
   width: 640px; 
-  padding: 50px;
+  padding: 10px;
   font-size: 18px;
   font-family: 'Lexend Deca', sans-serif; 
   color: #2E475D; 
@@ -59,6 +59,43 @@ align-items: center;
   padding: 10px;
 }
 
+.slidecontainer {
+  width: 100%; 
+}
+
+
+.slider {
+  -webkit-appearance: none;  
+  appearance: none;
+  width: 25%; 
+  height: 15px; 
+  background: #d3d3d3; 
+  outline: none; 
+  opacity: 0.7; 
+  -webkit-transition: .2s; 
+  transition: opacity .2s;
+}
+
+.slider:hover {
+  opacity: 1; 
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; 
+  appearance: none;
+  width: 15px; 
+  height: 20px; 
+  background: #6199e2;
+  cursor: pointer; 
+}
+
+.slider::-moz-range-thumb {
+  width: 10px; 
+  height: 10px; 
+  background: #6199e2; 
+  cursor: pointer; 
+}
+
 </style>
 
 <head>  
@@ -70,11 +107,20 @@ align-items: center;
 <img src="{{url_for('static', filename='images/Untitled_Artwork-2.png')}}" alt="WeatherVibes Logo" style="  width: 300px; height: auto;">
 </div>
 
+<br><br>
 
 <body>
 
-  <div class="weatherSubmission"></div>
   <form method="post" action="/weather">
+
+  <div class="weatherSubmission"></div>
+  <div class="slidecontainer">
+    <h3>How many songs per day?</h3>
+    <input type="range" min="1" max="5" value="3" class="slider" id="myRange" name="slider">
+    <h3 id="demo">Value</h3>
+  </div>
+
+
     <label for="city">Enter your City:</label><br>
     <input type="city" name="city" /><br />
     <input type="submit" />
@@ -92,6 +138,17 @@ align-items: center;
 
 </body>
 
+<script>
+var slider = document.getElementById("myRange");
+var output = document.getElementById("demo");
+output.innerHTML = slider.value; // Display the default slider value
+
+// Update the current slider value (each time you drag the slider handle)
+slider.oninput = function() {
+  output.innerHTML = this.value;
+}
+
+</script>
 
 
 <br><br><br>

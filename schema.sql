@@ -11,4 +11,4 @@ CREATE TABLE Users (
 
 
 INSERT INTO Users (email) VALUES ('test@bu.edu');
-INSERT INTO Users (emailUsersUsersUsersUsers) VALUES ('test1@bu.edu');
+INSERT INTO Users (email) VALUES ('test1@bu.edu');
